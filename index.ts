@@ -54,7 +54,7 @@ export default {
     const matic_price = await getPrice("MATIC-BTC");
     getBalances();
     let prices = JSON.parse(await env.COINBASE.get("prices"));
-    prices = [...prices.slice(0, 4), price];
+    prices = [...prices.slice(0, 9), price];
     const sum = prices.reduce((a, b) => a + b, 0);
     const average = sum / prices.length || 0;
     env.COINBASE.put("prices", JSON.stringify(prices));
@@ -63,28 +63,28 @@ export default {
       "ETH-BTC",
       "BUY",
       "0.1",
-      `${(price - average * 0.003).toFixed(5)}`,
+      `${(price - average * 0.0004).toFixed(5)}`,
       15
     ).then(console.log);
     const sell_eth = await newOrder(
       "ETH-BTC",
       "SELL",
       "0.05",
-      `${(price + average * 0.003).toFixed(5)}`,
+      `${(price + average * 0.0004).toFixed(5)}`,
       15
     ).then(console.log);
     const buy_matic = await newOrder(
       "MATIC-BTC",
       "BUY",
       `150`,
-      `${(matic_price - matic_price * 0.003).toFixed(8)}`,
+      `${(matic_price - matic_price * 0.0004).toFixed(8)}`,
       15
     ).then(console.log);
     const sell_matic = await newOrder(
       "MATIC-BTC",
       "SELL",
       `150`,
-      `${(matic_price + matic_price * 0.003).toFixed(8)}`,
+      `${(matic_price + matic_price * 0.0004).toFixed(8)}`,
       15
     ).then(console.log);
     return [buy_eth, sell_eth, buy_matic, sell_matic];
