@@ -33,7 +33,7 @@ function calculateEMA(closingPrices, period) {
     ema = closingPrices[i] * k + ema * (1 - k);
   }
   return ema;
-} // https://dev.to/onurcelik/calculate-the-exponential-moving-average-ema-with-javascript-29kp#:~:text=To%20calculate%20the%20Exponential%20Moving,)%20*%20(1%20%E2%80%93%20k))
+} // https://dev.to/onurcelik/calculate-the-exponential-moving-average-ema-with-javascript-29kp
 
 export default {
   fetch: async (request: any, env: any, ctx: any) => {
