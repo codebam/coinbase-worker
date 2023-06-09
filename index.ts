@@ -50,41 +50,46 @@ export default {
     };
 
     console.log("running scheduled event... " + new Date().toISOString());
-    const price = await getPrice("ETH-BTC");
-    const matic_price = await getPrice("MATIC-BTC");
     getBalances();
-    let prices = JSON.parse(await env.COINBASE.get("prices"));
-    prices = [...prices.slice(0, 9), price];
-    const sum = prices.reduce((a, b) => a + b, 0);
-    const average = sum / prices.length || 0;
-    env.COINBASE.put("prices", JSON.stringify(prices));
+    const eth_price = await getPrice("ETH-BTC");
+    const matic_price = await getPrice("MATIC-BTC");
+    let ethbtc_prices = JSON.parse(await env.COINBASE.get("ethbtc_prices"));
+    let maticbtc_prices = JSON.parse(await env.COINBASE.get("maticbtc_prices"));
+    ethbtc_prices = [...ethbtc_prices.slice(0, 9), eth_price];
+    maticbtc_prices = [...maticbtc_prices.slice(0, 9), matic_price];
+    const eth_sum = ethbtc_prices.reduce((a, b) => a + b, 0);
+    const matic_sum = ethbtc_prices.reduce((a, b) => a + b, 0);
+    const eth_average = eth_sum / ethbtc_prices.length || 0;
+    const matic_average = eth_sum / ethbtc_prices.length || 0;
+    env.COINBASE.put("ethbtc_prices", JSON.stringify(ethbtc_prices));
+    env.COINBASE.put("maticbtc_prices", JSON.stringify(maticbtc_prices));
 
     const buy_eth = await newOrder(
       "ETH-BTC",
       "BUY",
       "0.1",
-      `${(price - average * 0.0004).toFixed(5)}`,
+      `${(eth_price - eth_average * 0.0004).toFixed(5)}`,
       15
     ).then(console.log);
     const sell_eth = await newOrder(
       "ETH-BTC",
       "SELL",
       "0.05",
-      `${(price + average * 0.0004).toFixed(5)}`,
+      `${(eth_price + eth_average * 0.0004).toFixed(5)}`,
       15
     ).then(console.log);
     const buy_matic = await newOrder(
       "MATIC-BTC",
       "BUY",
       `135`,
-      `${(matic_price - matic_price * 0.0004).toFixed(8)}`,
+      `${(matic_price - matic_average * 0.0004).toFixed(8)}`,
       15
     ).then(console.log);
     const sell_matic = await newOrder(
       "MATIC-BTC",
       "SELL",
       `135`,
-      `${(matic_price + matic_price * 0.0004).toFixed(8)}`,
+      `${(matic_price + matic_average * 0.0004).toFixed(8)}`,
       15
     ).then(console.log);
     return [buy_eth, sell_eth, buy_matic, sell_matic];
