@@ -82,7 +82,7 @@ export default {
       "ETH-BTC",
       "SELL",
       "0.05",
-      `${(eth_price + eth_ema * 0.0004).toFixed(5)}`,
+      `${(eth_price + eth_ema * 0.0006).toFixed(5)}`,
       15
     ).then(console.log);
     const buy_matic = await newOrder(
@@ -96,7 +96,7 @@ export default {
       "MATIC-BTC",
       "SELL",
       `135`,
-      `${(matic_price + matic_ema * 0.0004).toFixed(8)}`,
+      `${(matic_price + matic_ema * 0.0006).toFixed(8)}`,
       15
     ).then(console.log);
     return [buy_eth, sell_eth, buy_matic, sell_matic];
