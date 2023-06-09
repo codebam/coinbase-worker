@@ -12,10 +12,6 @@ Date.prototype.addMinutes = function (m) {
   return this;
 };
 
-let btc_balance: number;
-let eth_balance: number;
-let matic_balance: number;
-
 let coinbase = {
   exchange: {
     // to get tickers
@@ -40,8 +36,27 @@ function calculateEMA(closingPrices, period) {
 } // https://dev.to/onurcelik/calculate-the-exponential-moving-average-ema-with-javascript-29kp#:~:text=To%20calculate%20the%20Exponential%20Moving,)%20*%20(1%20%E2%80%93%20k))
 
 export default {
-  fetch: async () => {
-    return new Response("we runnin");
+  fetch: async (request: any, env: any, ctx: any) => {
+    coinbase = {
+      exchange: {
+        // to get tickers
+        url: "https://api.exchange.coinbase.com/",
+      },
+      api: {
+        // for using the api
+        url: "https://api.coinbase.com",
+        path: "/api/v3/brokerage/",
+        key: env.COINBASE_API,
+        secret: env.COINBASE_SECRET,
+      },
+    };
+    const balances = await getBalances();
+    const btc = balances.filter((x) => x.currency === "BTC")[0].value;
+    const eth = balances.filter((x) => x.currency === "ETH")[0].value;
+    const matic = balances.filter((x) => x.currency === "MATIC")[0].value;
+    return new Response(
+      JSON.stringify({ balances: { btc, eth, matic } }, null, 2)
+    );
   },
   scheduled: async (event: any, env: any, ctx: any) => {
     coinbase = {
@@ -57,9 +72,12 @@ export default {
         secret: env.COINBASE_SECRET,
       },
     };
+    const balances = await getBalances();
+    const btc = balances.filter((x) => x.currency === "BTC")[0].value;
+    const eth = balances.filter((x) => x.currency === "ETH")[0].value;
+    const matic = balances.filter((x) => x.currency === "MATIC")[0].value;
 
     console.log("running scheduled event... " + new Date().toISOString());
-    getBalances();
     const eth_price = await getPrice("ETH-BTC");
     const matic_price = await getPrice("MATIC-BTC");
     let ethbtc_prices = JSON.parse(await env.COINBASE.get("ethbtc_prices"));
@@ -70,7 +88,6 @@ export default {
     const matic_ema = calculateEMA(maticbtc_prices, maticbtc_prices.length);
     env.COINBASE.put("ethbtc_prices", JSON.stringify(ethbtc_prices));
     env.COINBASE.put("maticbtc_prices", JSON.stringify(maticbtc_prices));
-
     const buy_eth = await newOrder(
       "ETH-BTC",
       "BUY",
@@ -121,7 +138,7 @@ const getPrice = async (ticker: string) => {
   return price;
 };
 
-const _getBalances = async () => {
+const getBalances = async () => {
   const method = "GET";
   const endpoint = "accounts";
   const path = coinbase.api.path + endpoint;
@@ -132,18 +149,10 @@ const _getBalances = async () => {
     "CB-ACCESS-SIGN": getSignature(timestamp, path, method),
     "CB-ACCESS-TIMESTAMP": timestamp,
   };
-  return fetch(coinbase.api.url + path, { method, headers }).then((t) =>
-    t.json()
-  );
+  return fetch(coinbase.api.url + path, { method, headers })
+    .then((r) => r.json())
+    .then((j) => j.accounts.map((account) => account.available_balance));
 };
-
-const getBalances = () =>
-  _getBalances().then((b) => {
-    const balances = b.accounts.map((x) => x.available_balance);
-    btc_balance = balances.filter((b) => b.currency === "BTC")[0].value;
-    eth_balance = balances.filter((b) => b.currency === "ETH")[0].value;
-    matic_balance = balances.filter((b) => b.currency === "MATIC")[0].value;
-  });
 
 const newOrder = async (
   product_id: string,
