@@ -64,8 +64,8 @@ export default {
     const matic_price = await getPrice("MATIC-BTC");
     let ethbtc_prices = JSON.parse(await env.COINBASE.get("ethbtc_prices"));
     let maticbtc_prices = JSON.parse(await env.COINBASE.get("maticbtc_prices"));
-    ethbtc_prices = [...ethbtc_prices.slice(0, 9), eth_price];
-    maticbtc_prices = [...maticbtc_prices.slice(0, 9), matic_price];
+    ethbtc_prices = [...ethbtc_prices.slice(0, 99), eth_price];
+    maticbtc_prices = [...maticbtc_prices.slice(0, 99), matic_price];
     const eth_ema = calculateEMA(ethbtc_prices, ethbtc_prices.length);
     const matic_ema = calculateEMA(maticbtc_prices, maticbtc_prices.length);
     env.COINBASE.put("ethbtc_prices", JSON.stringify(ethbtc_prices));
