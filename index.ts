@@ -97,21 +97,21 @@ export default {
     const sell_eth = await newOrder(
       "ETH-BTC",
       "SELL",
-      `${(await convertBtcFrom(eth / 3, "ETH")).toFixed(5)}`,
+      `${(eth / 3).toFixed(5)}`,
       `${(eth_price + eth_ema * 0.006).toFixed(5)}`,
       15
     ).then(console.log);
     const buy_matic = await newOrder(
       "MATIC-BTC",
       "BUY",
-      `98`,
+      `${(await convertBtcTo(btc / 3, "MATIC")).toFixed(5)}`,
       `${(matic_price - matic_ema * 0.003).toFixed(8)}`,
       15
     ).then(console.log);
     const sell_matic = await newOrder(
       "MATIC-BTC",
       "SELL",
-      `98`,
+      `${(matic / 3).toFixed(1)}`,
       `${(matic_price + matic_ema * 0.006).toFixed(8)}`,
       15
     ).then(console.log);
@@ -156,11 +156,6 @@ const getBalances = async () => {
 const convertBtcTo = async (x, ticker) => {
   const price: number = await getPrice(`${ticker}-BTC`);
   return x / price;
-};
-
-const convertBtcFrom = async (x, ticker) => {
-  const price: number = await getPrice(`${ticker}-BTC`);
-  return price / x;
 };
 
 const newOrder = async (
