@@ -72,12 +72,11 @@ export default {
         secret: env.COINBASE_SECRET,
       },
     };
+    console.log("running scheduled event... " + new Date().toISOString());
     const balances = await getBalances();
     const btc = balances.filter((x) => x.currency === "BTC")[0].value;
     const eth = balances.filter((x) => x.currency === "ETH")[0].value;
     const matic = balances.filter((x) => x.currency === "MATIC")[0].value;
-
-    console.log("running scheduled event... " + new Date().toISOString());
     const eth_price = await getPrice("ETH-BTC");
     const matic_price = await getPrice("MATIC-BTC");
     let ethbtc_prices = JSON.parse(await env.COINBASE.get("ethbtc_prices"));
@@ -91,28 +90,28 @@ export default {
     const buy_eth = await newOrder(
       "ETH-BTC",
       "BUY",
-      "0.1",
+      `${(await convertBtcTo(btc / 3, "ETH")).toFixed(5)}`,
       `${(eth_price - eth_ema * 0.0004).toFixed(5)}`,
       15
     ).then(console.log);
     const sell_eth = await newOrder(
       "ETH-BTC",
       "SELL",
-      "0.05",
+      `${(await convertBtcFrom(eth / 3, "ETH")).toFixed(5)}`,
       `${(eth_price + eth_ema * 0.0006).toFixed(5)}`,
       15
     ).then(console.log);
     const buy_matic = await newOrder(
       "MATIC-BTC",
       "BUY",
-      `135`,
+      `${(await convertBtcTo(btc / 3, "MATIC")).toFixed(1)}`,
       `${(matic_price - matic_ema * 0.0004).toFixed(8)}`,
       15
     ).then(console.log);
     const sell_matic = await newOrder(
       "MATIC-BTC",
       "SELL",
-      `135`,
+      `${(await convertBtcFrom(matic / 3, "MATIC")).toFixed(1)}`,
       `${(matic_price + matic_ema * 0.0006).toFixed(8)}`,
       15
     ).then(console.log);
@@ -152,6 +151,16 @@ const getBalances = async () => {
   return fetch(coinbase.api.url + path, { method, headers })
     .then((r) => r.json())
     .then((j) => j.accounts.map((account) => account.available_balance));
+};
+
+const convertBtcTo = async (x, ticker) => {
+  const price: number = await getPrice(`${ticker}-BTC`);
+  return x / price;
+};
+
+const convertBtcFrom = async (x, ticker) => {
+  const price: number = await getPrice(`${ticker}-BTC`);
+  return x * price;
 };
 
 const newOrder = async (
