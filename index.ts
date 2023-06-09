@@ -76,14 +76,14 @@ export default {
     const buy_matic = await newOrder(
       "MATIC-BTC",
       "BUY",
-      `150`,
+      `135`,
       `${(matic_price - matic_price * 0.0004).toFixed(8)}`,
       15
     ).then(console.log);
     const sell_matic = await newOrder(
       "MATIC-BTC",
       "SELL",
-      `150`,
+      `135`,
       `${(matic_price + matic_price * 0.0004).toFixed(8)}`,
       15
     ).then(console.log);
