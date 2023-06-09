@@ -30,6 +30,15 @@ let coinbase = {
   },
 };
 
+function calculateEMA(closingPrices, period) {
+  const k = 2 / (period + 1);
+  let ema = closingPrices[0];
+  for (let i = 1; i < closingPrices.length; i++) {
+    ema = closingPrices[i] * k + ema * (1 - k);
+  }
+  return ema;
+} // https://dev.to/onurcelik/calculate-the-exponential-moving-average-ema-with-javascript-29kp#:~:text=To%20calculate%20the%20Exponential%20Moving,)%20*%20(1%20%E2%80%93%20k))
+
 export default {
   fetch: async () => {
     return new Response("we runnin");
@@ -57,10 +66,8 @@ export default {
     let maticbtc_prices = JSON.parse(await env.COINBASE.get("maticbtc_prices"));
     ethbtc_prices = [...ethbtc_prices.slice(0, 9), eth_price];
     maticbtc_prices = [...maticbtc_prices.slice(0, 9), matic_price];
-    const eth_sum = ethbtc_prices.reduce((a, b) => a + b, 0);
-    const matic_sum = ethbtc_prices.reduce((a, b) => a + b, 0);
-    const eth_average = eth_sum / ethbtc_prices.length || 0;
-    const matic_average = eth_sum / ethbtc_prices.length || 0;
+    const eth_ema = calculateEMA(ethbtc_prices, ethbtc_prices.length);
+    const matic_ema = calculateEMA(maticbtc_prices, maticbtc_prices.length);
     env.COINBASE.put("ethbtc_prices", JSON.stringify(ethbtc_prices));
     env.COINBASE.put("maticbtc_prices", JSON.stringify(maticbtc_prices));
 
@@ -68,28 +75,28 @@ export default {
       "ETH-BTC",
       "BUY",
       "0.1",
-      `${(eth_price - eth_average * 0.0004).toFixed(5)}`,
+      `${(eth_price - eth_ema * 0.0004).toFixed(5)}`,
       15
     ).then(console.log);
     const sell_eth = await newOrder(
       "ETH-BTC",
       "SELL",
       "0.05",
-      `${(eth_price + eth_average * 0.0004).toFixed(5)}`,
+      `${(eth_price + eth_ema * 0.0004).toFixed(5)}`,
       15
     ).then(console.log);
     const buy_matic = await newOrder(
       "MATIC-BTC",
       "BUY",
       `135`,
-      `${(matic_price - matic_average * 0.0004).toFixed(8)}`,
+      `${(matic_price - matic_ema * 0.0004).toFixed(8)}`,
       15
     ).then(console.log);
     const sell_matic = await newOrder(
       "MATIC-BTC",
       "SELL",
       `135`,
-      `${(matic_price + matic_average * 0.0004).toFixed(8)}`,
+      `${(matic_price + matic_ema * 0.0004).toFixed(8)}`,
       15
     ).then(console.log);
     return [buy_eth, sell_eth, buy_matic, sell_matic];
