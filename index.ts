@@ -91,28 +91,28 @@ export default {
       "ETH-BTC",
       "BUY",
       `${(await convertBtcTo(btc / 3, "ETH")).toFixed(5)}`,
-      `${(eth_price - eth_ema * 0.0004).toFixed(5)}`,
+      `${(eth_price - eth_ema * 0.003).toFixed(5)}`,
       15
     ).then(console.log);
     const sell_eth = await newOrder(
       "ETH-BTC",
       "SELL",
       `${(await convertBtcFrom(eth / 3, "ETH")).toFixed(5)}`,
-      `${(eth_price + eth_ema * 0.0006).toFixed(5)}`,
+      `${(eth_price + eth_ema * 0.006).toFixed(5)}`,
       15
     ).then(console.log);
     const buy_matic = await newOrder(
       "MATIC-BTC",
       "BUY",
       `${(await convertBtcTo(btc / 3, "MATIC")).toFixed(1)}`,
-      `${(matic_price - matic_ema * 0.0004).toFixed(8)}`,
+      `${(matic_price - matic_ema * 0.003).toFixed(8)}`,
       15
     ).then(console.log);
     const sell_matic = await newOrder(
       "MATIC-BTC",
       "SELL",
       `${(await convertBtcFrom(matic / 3, "MATIC")).toFixed(1)}`,
-      `${(matic_price + matic_ema * 0.0006).toFixed(8)}`,
+      `${(matic_price + matic_ema * 0.006).toFixed(8)}`,
       15
     ).then(console.log);
     return [buy_eth, sell_eth, buy_matic, sell_matic];
