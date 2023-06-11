@@ -1,4 +1,4 @@
-name = "crypto"
+name = "coinbase"
 main = "index.ts"
 compatibility_date = "2023-06-09"
 

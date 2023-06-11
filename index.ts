@@ -1,5 +1,3 @@
-import hmacSHA256 from "crypto-js/hmac-sha256";
-
 // @ts-ignore
 Date.prototype.addHours = function (h) {
   this.setHours(this.getHours() + h);
@@ -90,42 +88,65 @@ export default {
     const buy_eth = await newOrder(
       "ETH-BTC",
       "BUY",
-      (await convertBtcTo(btc / 3, "ETH")).toFixed(5),
-      (eth_price - eth_ema * 0.00333).toFixed(5),
+      (await convertBtcTo(btc / 1.1, "ETH")).toFixed(5),
+      (eth_price - eth_ema * 0.000333).toFixed(5),
       15
     ).then(console.log);
-    const sell_eth = await newOrder(
-      "ETH-BTC",
-      "SELL",
-      (eth / 3).toFixed(5),
-      (eth_price + eth_ema * 0.00333).toFixed(5),
-      15
-    ).then(console.log);
-    const buy_matic = await newOrder(
-      "MATIC-BTC",
-      "BUY",
-      (await convertBtcTo(btc / 3, "MATIC")).toFixed(0),
-      (matic_price - matic_ema * 0.00333).toFixed(8),
-      15
-    ).then(console.log);
-    const sell_matic = await newOrder(
-      "MATIC-BTC",
-      "SELL",
-      `${(matic / 3).toFixed(1)}`,
-      (matic_price + matic_ema * 0.00333).toFixed(8),
-      15
-    ).then(console.log);
-    return [buy_eth, sell_eth, buy_matic, sell_matic];
+    // const sell_eth = await newOrder(
+    //   "ETH-BTC",
+    //   "SELL",
+    //   (eth - 0.1 / 3).toFixed(5), // hold 0.1
+    //   (eth_price + eth_ema * 0.002333).toFixed(5),
+    //   15
+    // ).then(console.log);
+    // const buy_matic = await newOrder(
+    //   "MATIC-BTC",
+    //   "BUY",
+    //   (await convertBtcTo(btc / 3, "MATIC")).toFixed(0),
+    //   (matic_price - matic_ema * 0.00333).toFixed(8),
+    //   15
+    // ).then(console.log);
+    // const sell_matic = await newOrder(
+    //   "MATIC-BTC",
+    //   "SELL",
+    //   `${(matic - 150 / 3).toFixed(1)}`, // hold 150
+    //   (matic_price + matic_ema * 0.00333).toFixed(8),
+    //   15
+    // ).then(console.log);
+    return [buy_eth];
   },
 };
 
+const hmacSha256 = (message: string, secret: string) =>
+  crypto.subtle
+    .importKey(
+      "raw",
+      new TextEncoder().encode(secret),
+      {
+        name: "HMAC",
+        hash: { name: "SHA-256" },
+      },
+      false,
+      ["sign", "verify"]
+    )
+    .then((key) =>
+      crypto.subtle
+        .sign("HMAC", key, new TextEncoder().encode(message))
+        .then((array_buffer) =>
+          Array.from(new Uint8Array(array_buffer))
+            .map((b) => b.toString(16).padStart(2, "0"))
+            .join("")
+        )
+    );
+
 const getTimestamp = () => `${Math.trunc(new Date().getTime() / 1000)}`;
-const getSignature = (
+const getSignature = async (
   timestamp: string,
   path: string,
   method = "",
   body = ""
-) => `${hmacSHA256(timestamp + method + path + body, coinbase.api.secret)}`;
+) =>
+  `${await hmacSha256(timestamp + method + path + body, coinbase.api.secret)}`;
 
 const getPrice = async (ticker: string) => {
   const path = `products/${ticker}/ticker`;
@@ -142,10 +163,11 @@ const getBalances = async () => {
   const endpoint = "accounts";
   const path = coinbase.api.path + endpoint;
   const timestamp = getTimestamp();
+  console.log(await getSignature(timestamp, path, method));
   const headers = {
     "Content-Type": "application/json",
     "CB-ACCESS-KEY": coinbase.api.key,
-    "CB-ACCESS-SIGN": getSignature(timestamp, path, method),
+    "CB-ACCESS-SIGN": await getSignature(timestamp, path, method),
     "CB-ACCESS-TIMESTAMP": timestamp,
   };
   return fetch(coinbase.api.url + path, { method, headers })
@@ -189,7 +211,7 @@ const newOrder = async (
   const headers = {
     "Content-Type": "application/json",
     "CB-ACCESS-KEY": coinbase.api.key,
-    "CB-ACCESS-SIGN": getSignature(timestamp, path, method, body),
+    "CB-ACCESS-SIGN": await getSignature(timestamp, path, method, body),
     "CB-ACCESS-TIMESTAMP": timestamp,
   };
   return fetch(coinbase.api.url + path, { method, headers, body }).then((r) =>
