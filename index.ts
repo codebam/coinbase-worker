@@ -81,17 +81,17 @@ export default {
     let maticbtc_prices = JSON.parse(await env.COINBASE.get("maticbtc_prices"));
     ethbtc_prices = [...ethbtc_prices.slice(0, 99), eth_price];
     maticbtc_prices = [...maticbtc_prices.slice(0, 99), matic_price];
-    const eth_ema = calculateEMA(ethbtc_prices, ethbtc_prices.length);
-    const matic_ema = calculateEMA(maticbtc_prices, maticbtc_prices.length);
-    env.COINBASE.put("ethbtc_prices", JSON.stringify(ethbtc_prices));
-    env.COINBASE.put("maticbtc_prices", JSON.stringify(maticbtc_prices));
-    const buy_eth = await newOrder(
-      "ETH-BTC",
-      "BUY",
-      (await convertBtcTo(btc / 1.1, "ETH")).toFixed(5),
-      (eth_price - eth_ema * 0.000333).toFixed(5),
-      15
-    ).then(console.log);
+    // const eth_ema = calculateEMA(ethbtc_prices, ethbtc_prices.length);
+    // const matic_ema = calculateEMA(maticbtc_prices, maticbtc_prices.length);
+    // env.COINBASE.put("ethbtc_prices", JSON.stringify(ethbtc_prices));
+    // env.COINBASE.put("maticbtc_prices", JSON.stringify(maticbtc_prices));
+    // const buy_eth = await newOrder(
+    //   "ETH-BTC",
+    //   "BUY",
+    //   (await convertBtcTo(btc / 1.1, "ETH")).toFixed(5),
+    //   (eth_price - eth_price * 0.00333).toFixed(5),
+    //   60
+    // ).then(console.log);
     // const sell_eth = await newOrder(
     //   "ETH-BTC",
     //   "SELL",
@@ -113,7 +113,7 @@ export default {
     //   (matic_price + matic_ema * 0.00333).toFixed(8),
     //   15
     // ).then(console.log);
-    return [buy_eth];
+    // return [buy_eth];
   },
 };
 
