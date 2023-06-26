@@ -86,15 +86,13 @@ export default {
 			60 * 3
 		).then(console.log);
 		if (up) {
-			if (ema20 - 0.0001 < eth_price) {
-				const sell_btc = await newOrder(
-					"ETH-BTC",
-					"BUY",
-					(await convertBtcTo(btc, "ETH")).toFixed(5),
-					(eth_price * 1 - 0.00012702).toFixed(5),
-					60 * 3
-				).then(console.log);
-			}
+			const sell_btc = await newOrder(
+				"ETH-BTC",
+				"BUY",
+				(await convertBtcTo(btc, "ETH")).toFixed(5),
+				(eth_price * 1 - 0.00012702).toFixed(5),
+				60 * 3
+			).then(console.log);
 		}
 	},
 };
