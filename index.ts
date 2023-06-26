@@ -73,10 +73,11 @@ export default {
 		const btc = balances.filter((x) => x.currency === "BTC")[0].value;
 		const eth = balances.filter((x) => x.currency === "ETH")[0].value;
 		const eth_price = await getPrice("ETH-BTC");
-		const ema = await getCandles("ETH-BTC").then((candles) => {
-			const close = candles.map((candle) => candle[4]);
-			return calculateEMA(close, 20);
-		});
+		const candles = await getCandles("ETH-BTC");
+		const close = candles.map((candle) => candle[4]);
+		const ema20 = calculateEMA(close, 20);
+		const ema100 = calculateEMA(close, 100);
+		const up = ema100 > ema20;
 		const buy_btc = await newOrder(
 			"ETH-BTC",
 			"SELL",
@@ -84,14 +85,16 @@ export default {
 			(eth_price * 1 + 0.00012702).toFixed(5),
 			60 * 3
 		).then(console.log);
-		if (ema + 0.0001 < eth_price) {
-			const sell_btc = await newOrder(
-				"ETH-BTC",
-				"BUY",
-				(await convertBtcTo(btc, "ETH")).toFixed(5),
-				(eth_price * 1 - 0.00012702).toFixed(5),
-				60 * 3
-			).then(console.log);
+		if (up) {
+			if (ema20 - 0.0001 < eth_price) {
+				const sell_btc = await newOrder(
+					"ETH-BTC",
+					"BUY",
+					(await convertBtcTo(btc, "ETH")).toFixed(5),
+					(eth_price * 1 - 0.00012702).toFixed(5),
+					60 * 3
+				).then(console.log);
+			}
 		}
 	},
 };
