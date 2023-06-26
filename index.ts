@@ -87,7 +87,7 @@ export default {
 			`${ticker}-${base}`,
 			"SELL",
 			parseFloat(ticker_balance).toFixed(5),
-			(price * 1 + 0.00012702).toFixed(5),
+			(price * (1 + 0.00012702)).toFixed(5),
 			60 * 3
 		).then(console.log);
 		if (up) {
@@ -95,7 +95,7 @@ export default {
 				`${ticker}-${base}`,
 				"BUY",
 				(await convertBaseTo(base_balance, ticker, base)).toFixed(5),
-				(price * 1 - 0.00012702).toFixed(5),
+				(price * (1 - 0.00012702)).toFixed(5),
 				60 * 3
 			).then(console.log);
 		}
