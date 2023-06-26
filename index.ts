@@ -51,6 +51,8 @@ export default {
 		const balances = await getBalances();
 		const btc = balances.filter((x) => x.currency === "BTC")[0].value;
 		const eth = balances.filter((x) => x.currency === "ETH")[0].value;
+		// const ltc = balances.filter((x) => x.currency === "LTC")[0].value;
+		// const matic = balances.filter((x) => x.currency === "matic")[0].value;
 		return new Response(JSON.stringify({ balances: { btc, eth } }, null, 2), {
 			headers: { "Content-Type": "application/json" },
 		});
@@ -70,27 +72,31 @@ export default {
 			},
 		};
 		const balances = await getBalances();
-		const btc = balances.filter((x) => x.currency === "BTC")[0].value;
-		const eth = balances.filter((x) => x.currency === "ETH")[0].value;
-		const eth_price = await getPrice("ETH-BTC");
-		const candles = await getCandles("ETH-BTC");
+		const ticker = "ETH";
+		const base = "BTC";
+		const base_balance = balances.filter((x) => x.currency === base)[0].value;
+		const ticker_balance = balances.filter((x) => x.currency === ticker)[0]
+			.value;
+		const price = await getPrice(`${ticker}-${base}`);
+		const candles = await getCandles(`${ticker}-${base}`);
 		const close = candles.map((candle) => candle[4]);
 		const ema20 = calculateEMA(close, 20);
 		const ema100 = calculateEMA(close, 100);
 		const up = ema100 > ema20;
+		console.log(parseFloat(ticker_balance).toFixed(5));
 		const buy_btc = await newOrder(
-			"ETH-BTC",
+			`${ticker}-${base}`,
 			"SELL",
-			parseFloat(eth).toFixed(5),
-			(eth_price * 1 + 0.00012702).toFixed(5),
+			parseFloat(ticker_balance).toFixed(5),
+			(price * 1 + 0.00012702).toFixed(5),
 			60 * 3
 		).then(console.log);
 		if (up) {
 			const sell_btc = await newOrder(
-				"ETH-BTC",
+				`${ticker}-${base}`,
 				"BUY",
-				(await convertBtcTo(btc, "ETH")).toFixed(5),
-				(eth_price * 1 - 0.00012702).toFixed(5),
+				(await convertBaseTo(base_balance, ticker, base)).toFixed(5),
+				(price * 1 - 0.00012702).toFixed(5),
 				60 * 3
 			).then(console.log);
 		}
@@ -165,8 +171,8 @@ const getBalances = async () => {
 		.then((j) => j.accounts.map((account) => account.available_balance));
 };
 
-const convertBtcTo = async (x, ticker) => {
-	const price: number = await getPrice(`${ticker}-BTC`);
+const convertBaseTo = async (x, ticker, base) => {
+	const price: number = await getPrice(`${ticker}-${base}`);
 	return x / price;
 };
 
