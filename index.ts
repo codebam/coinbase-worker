@@ -80,7 +80,7 @@ export default {
 		const buy_btc = await newOrder(
 			"ETH-BTC",
 			"SELL",
-			(eth * 0.9).toFixed(5),
+			eth.toFixed(5),
 			(eth_price * 1 + 0.00012702).toFixed(5),
 			60 * 3
 		).then(console.log);
@@ -88,7 +88,7 @@ export default {
 			const sell_btc = await newOrder(
 				"ETH-BTC",
 				"BUY",
-				(await convertBtcTo((btc - 0.01) * 0.9, "ETH")).toFixed(5),
+				(await convertBtcTo(btc, "ETH")).toFixed(5),
 				(eth_price * 1 - 0.00012702).toFixed(5),
 				60 * 3
 			).then(console.log);
