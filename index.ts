@@ -183,7 +183,6 @@ const newOrder = async (
 	const path = coinbase.api.path + "orders";
 	const timestamp = getTimestamp();
 	const body_params = {
-		// @ts-ignore
 		client_order_id: crypto.randomUUID(),
 		product_id,
 		side,
@@ -191,6 +190,7 @@ const newOrder = async (
 			limit_limit_gtd: {
 				base_size: size,
 				limit_price: price,
+				// @ts-ignore
 				end_time: new Date().addMinutes(end_time),
 				post_only: true,
 			},
