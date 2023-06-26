@@ -75,7 +75,7 @@ export default {
 		const eth_price = await getPrice("ETH-BTC");
 		const ema = await getCandles("ETH-BTC").then((candles) => {
 			const close = candles.map((candle) => candle[4]);
-			return calculateEMA(close, 5);
+			return calculateEMA(close, 20);
 		});
 		const buy_btc = await newOrder(
 			"ETH-BTC",
