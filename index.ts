@@ -83,7 +83,6 @@ export default {
 		const ema20 = calculateEMA(close, 20);
 		const ema100 = calculateEMA(close, 100);
 		const up = ema100 > ema20;
-		console.log(parseFloat(ticker_balance).toFixed(5));
 		const buy_btc = await newOrder(
 			`${ticker}-${base}`,
 			"SELL",
