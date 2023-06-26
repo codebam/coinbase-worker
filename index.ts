@@ -77,7 +77,7 @@ export default {
 			const close = candles.map((candle) => candle[4]);
 			return calculateEMA(close, 5);
 		});
-		if (ema + 0.001 < eth_price) {
+		if (ema + 0.0001 < eth_price) {
 			const sell_btc = await newOrder(
 				"ETH-BTC",
 				"BUY",
