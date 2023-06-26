@@ -85,15 +85,14 @@ export default {
 				(eth_price * 1 - 0.00012702).toFixed(5),
 				60 * 3
 			).then(console.log);
-		} else {
-			const buy_btc = await newOrder(
-				"ETH-BTC",
-				"SELL",
-				(eth / 1.15).toFixed(5),
-				(eth_price * 1 + 0.00012702).toFixed(5),
-				60 * 3
-			).then(console.log);
 		}
+		const buy_btc = await newOrder(
+			"ETH-BTC",
+			"SELL",
+			(eth / 1.15).toFixed(5),
+			(eth_price * 1 + 0.00012702).toFixed(5),
+			60 * 3
+		).then(console.log);
 	},
 };
 
