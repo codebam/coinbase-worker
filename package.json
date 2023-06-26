@@ -19,7 +19,6 @@
     "esbuild": "^0.17.19"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20230518.0",
-    "@types/crypto-js": "^4.1.1"
+    "@cloudflare/workers-types": "^4.20230518.0"
   }
 }
