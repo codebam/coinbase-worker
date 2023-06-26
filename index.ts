@@ -84,7 +84,7 @@ export default {
 			(eth_price * 1 + 0.00012702).toFixed(5),
 			60 * 3
 		).then(console.log);
-		// only sell if the EMA is below the price by .
+		// only sell if the EMA is above the price by .
 		if (ema + 0.0001 < eth_price) {
 			const sell_btc = await newOrder(
 				"ETH-BTC",
