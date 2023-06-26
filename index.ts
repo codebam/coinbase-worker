@@ -51,10 +51,9 @@ export default {
 		const balances = await getBalances();
 		const btc = balances.filter((x) => x.currency === "BTC")[0].value;
 		const eth = balances.filter((x) => x.currency === "ETH")[0].value;
-		const matic = balances.filter((x) => x.currency === "MATIC")[0].value;
-		return new Response(
-			JSON.stringify({ balances: { btc, eth, matic } }, null, 2)
-		);
+		return new Response(JSON.stringify({ balances: { btc, eth } }, null, 2), {
+			headers: { "Content-Type": "application/json" },
+		});
 	},
 	scheduled: async (event: any, env: any, ctx: any) => {
 		coinbase = {
@@ -70,48 +69,31 @@ export default {
 				secret: env.COINBASE_SECRET,
 			},
 		};
-		console.log("running scheduled event... " + new Date().toISOString());
 		const balances = await getBalances();
 		const btc = balances.filter((x) => x.currency === "BTC")[0].value;
 		const eth = balances.filter((x) => x.currency === "ETH")[0].value;
 		const eth_price = await getPrice("ETH-BTC");
-		// let ethbtc_prices = JSON.parse(await env.COINBASE.get("ethbtc_prices"));
-		// let maticbtc_prices = JSON.parse(await env.COINBASE.get("maticbtc_prices"));
-		// ethbtc_prices = [...ethbtc_prices.slice(0, 99), eth_price];
-		// maticbtc_prices = [...maticbtc_prices.slice(0, 99), matic_price];
-		// const eth_ema = calculateEMA(ethbtc_prices, ethbtc_prices.length);
-		// const matic_ema = calculateEMA(maticbtc_prices, maticbtc_prices.length);
-		// env.COINBASE.put("ethbtc_prices", JSON.stringify(ethbtc_prices));
-		// env.COINBASE.put("maticbtc_prices", JSON.stringify(maticbtc_prices));
-		const buy_eth = await newOrder(
-			"ETH-BTC",
-			"BUY",
-			(await convertBtcTo(btc - 0.01 / 1.15, "ETH")).toFixed(5),
-			(eth_price * 1 - 0.013333).toFixed(5),
-			30
-		).then(console.log);
-		const sell_eth = await newOrder(
-			"ETH-BTC",
-			"SELL",
-			(eth - 0.1 / 1.15).toFixed(5),
-			(eth_price * 1 + 0.013333).toFixed(5),
-			30
-		).then(console.log);
-		// const buy_matic = await newOrder(
-		//   "MATIC-BTC",
-		//   "BUY",
-		//   (await convertBtcTo(btc / 3, "MATIC")).toFixed(0),
-		//   (matic_price - matic_ema * 0.00333).toFixed(8),
-		//   15
-		// ).then(console.log);
-		// const sell_matic = await newOrder(
-		//   "MATIC-BTC",
-		//   "SELL",
-		//   `${(matic - 150 / 3).toFixed(1)}`, // hold 150
-		//   (matic_price + matic_ema * 0.00333).toFixed(8),
-		//   15
-		// ).then(console.log);
-		// return [buy_eth];
+		const ema = await getCandles("ETH-BTC").then((candles) => {
+			const close = candles.map((candle) => candle[4]);
+			return calculateEMA(close, 5);
+		});
+		if (ema < eth_price) {
+			const sell_btc = await newOrder(
+				"ETH-BTC",
+				"BUY",
+				(await convertBtcTo(btc - 0.01 / 1.15, "ETH")).toFixed(5),
+				(eth_price * 1 - 0.00012702).toFixed(5),
+				60 * 3
+			).then(console.log);
+		} else {
+			const buy_btc = await newOrder(
+				"ETH-BTC",
+				"SELL",
+				(eth / 1.15).toFixed(5),
+				(eth_price * 1 + 0.00012702).toFixed(5),
+				60 * 3
+			).then(console.log);
+		}
 	},
 };
 
@@ -154,6 +136,16 @@ const getPrice = async (ticker: string) => {
 		.then((r) => r.json())
 		.then((j) => parseFloat(j.price));
 	return price;
+};
+
+const getCandles = async (ticker: string) => {
+	const path = `products/${ticker}/candles`;
+	const headers = { "User-Agent": "Cloudflare" };
+	console.log(coinbase.exchange.url + path);
+	const candles = await fetch(coinbase.exchange.url + path, { headers }).then(
+		(r) => r.json()
+	);
+	return candles;
 };
 
 const getBalances = async () => {
