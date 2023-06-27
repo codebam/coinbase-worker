@@ -92,7 +92,7 @@ export default {
 					(parseFloat(ticker_balance) * 0.7).toFixed(5),
 					(price * (1 + 0.0032702)).toFixed(6),
 					60 * 2
-				).then(console.log)
+				)
 			);
 		}
 		if (!up) {
@@ -103,10 +103,12 @@ export default {
 					(await convertBaseTo(base_balance * 0.7, ticker, base)).toFixed(5),
 					(price * (1 - 0.0032702)).toFixed(6),
 					60 * 2
-				).then(console.log)
+				)
 			);
 		}
-		return Promise.all(orders);
+		const result = Promise.all(orders);
+		console.log(await result);
+		return result;
 	},
 };
 
