@@ -88,7 +88,7 @@ export default {
 				`${ticker}-${base}`,
 				"SELL",
 				parseFloat(ticker_balance).toFixed(5),
-				(price * (1 + 0.0012702)).toFixed(5),
+				(price * (1 + 0.0012702)).toFixed(8),
 				60 * 3
 			).then(console.log);
 		}
