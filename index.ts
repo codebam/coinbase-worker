@@ -1,10 +1,4 @@
 // @ts-ignore
-Date.prototype.addHours = function (h: number) {
-	this.setHours(this.getHours() + h);
-	return this;
-};
-
-// @ts-ignore
 Date.prototype.addMinutes = function (m: number) {
 	this.setMinutes(this.getMinutes() + m);
 	return this;
@@ -51,8 +45,6 @@ export default {
 		const balances = await getBalances();
 		const btc = balances.filter((x: any) => x.currency === "BTC")[0].value;
 		const ltc = balances.filter((x: any) => x.currency === "LTC")[0].value;
-		// const ltc = balances.filter((x) => x.currency === "LTC")[0].value;
-		// const matic = balances.filter((x) => x.currency === "matic")[0].value;
 		return new Response(JSON.stringify({ balances: { btc, ltc } }, null, 2), {
 			headers: { "Content-Type": "application/json" },
 		});
