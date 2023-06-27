@@ -92,7 +92,7 @@ export default {
 				60 * 2
 			).then(console.log);
 		}
-		if (up) {
+		if (!up) {
 			const sell_btc = await newOrder(
 				`${ticker}-${base}`,
 				"BUY",
