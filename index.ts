@@ -1,11 +1,11 @@
 // @ts-ignore
-Date.prototype.addHours = function (h) {
+Date.prototype.addHours = function (h: number) {
 	this.setHours(this.getHours() + h);
 	return this;
 };
 
 // @ts-ignore
-Date.prototype.addMinutes = function (m) {
+Date.prototype.addMinutes = function (m: number) {
 	this.setMinutes(this.getMinutes() + m);
 	return this;
 };
@@ -24,7 +24,7 @@ let coinbase = {
 	},
 };
 
-function calculateEMA(closingPrices, period) {
+function calculateEMA(closingPrices: [number], period: number) {
 	const k = 2 / (period + 1);
 	let ema = closingPrices[0];
 	for (let i = 1; i < closingPrices.length; i++) {
@@ -49,8 +49,8 @@ export default {
 			},
 		};
 		const balances = await getBalances();
-		const btc = balances.filter((x) => x.currency === "BTC")[0].value;
-		const ltc = balances.filter((x) => x.currency === "LTC")[0].value;
+		const btc = balances.filter((x: any) => x.currency === "BTC")[0].value;
+		const ltc = balances.filter((x: any) => x.currency === "LTC")[0].value;
 		// const ltc = balances.filter((x) => x.currency === "LTC")[0].value;
 		// const matic = balances.filter((x) => x.currency === "matic")[0].value;
 		return new Response(JSON.stringify({ balances: { btc, ltc } }, null, 2), {
@@ -74,12 +74,13 @@ export default {
 		const balances = await getBalances();
 		const ticker = "LTC";
 		const base = "BTC";
-		const base_balance = balances.filter((x) => x.currency === base)[0].value;
-		const ticker_balance = balances.filter((x) => x.currency === ticker)[0]
+		const base_balance = balances.filter((x: any) => x.currency === base)[0]
+			.value;
+		const ticker_balance = balances.filter((x: any) => x.currency === ticker)[0]
 			.value;
 		const price = await getPrice(`${ticker}-${base}`);
 		const candles = await getCandles(`${ticker}-${base}`);
-		const close = candles.map((candle) => candle[4]);
+		const close = candles.map((candle: any) => candle[4]);
 		const ema20 = calculateEMA(close, 20);
 		const ema100 = calculateEMA(close, 100);
 		const up = ema100 > ema20;
@@ -174,7 +175,7 @@ const getBalances = async () => {
 	};
 	return fetch(coinbase.api.url + path, { method, headers })
 		.then((r) => r.json())
-		.then((j) => j.accounts.map((account) => account.available_balance));
+		.then((j) => j.accounts.map((account: any) => account.available_balance));
 };
 
 const cancelAllOrders = async () => {
@@ -193,7 +194,7 @@ const cancelAllOrders = async () => {
 	);
 };
 
-const convertBaseTo = async (x, ticker, base) => {
+const convertBaseTo = async (x: number, ticker: string, base: string) => {
 	const price: number = await getPrice(`${ticker}-${base}`);
 	return x / price;
 };
