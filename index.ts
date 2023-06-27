@@ -82,13 +82,13 @@ export default {
 		const close = candles.map((candle) => candle[4]);
 		const ema20 = calculateEMA(close, 20);
 		const ema100 = calculateEMA(close, 100);
-		const up = ema100 > ema20;
+		const up = ema100 < ema20;
 		if (ticker_balance > 0.00001) {
 			const buy_btc = await newOrder(
 				`${ticker}-${base}`,
 				"SELL",
 				parseFloat(ticker_balance).toFixed(5),
-				(price * (1 + 0.00012702)).toFixed(5),
+				(price * (1 + 0.0012702)).toFixed(5),
 				60 * 3
 			).then(console.log);
 		}
@@ -97,7 +97,7 @@ export default {
 				`${ticker}-${base}`,
 				"BUY",
 				(await convertBaseTo(base_balance, ticker, base)).toFixed(5),
-				(price * (1 - 0.00012702)).toFixed(5),
+				(price * (1 - 0.0012702)).toFixed(5),
 				60 * 3
 			).then(console.log);
 		}
