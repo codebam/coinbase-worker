@@ -50,10 +50,10 @@ export default {
 		};
 		const balances = await getBalances();
 		const btc = balances.filter((x) => x.currency === "BTC")[0].value;
-		const eth = balances.filter((x) => x.currency === "ETH")[0].value;
+		const ltc = balances.filter((x) => x.currency === "LTC")[0].value;
 		// const ltc = balances.filter((x) => x.currency === "LTC")[0].value;
 		// const matic = balances.filter((x) => x.currency === "matic")[0].value;
-		return new Response(JSON.stringify({ balances: { btc, eth } }, null, 2), {
+		return new Response(JSON.stringify({ balances: { btc, ltc } }, null, 2), {
 			headers: { "Content-Type": "application/json" },
 		});
 	},
@@ -72,7 +72,7 @@ export default {
 			},
 		};
 		const balances = await getBalances();
-		const ticker = "MATIC";
+		const ticker = "LTC";
 		const base = "BTC";
 		const base_balance = balances.filter((x) => x.currency === base)[0].value;
 		const ticker_balance = balances.filter((x) => x.currency === ticker)[0]
@@ -82,13 +82,13 @@ export default {
 		const close = candles.map((candle) => candle[4]);
 		const ema20 = calculateEMA(close, 20);
 		const ema100 = calculateEMA(close, 100);
-		const up = ema100 < ema20;
+		const up = ema100 > ema20;
 		if (ticker_balance > 0.00001) {
 			const buy_btc = await newOrder(
 				`${ticker}-${base}`,
 				"SELL",
 				parseFloat(ticker_balance).toFixed(5),
-				(price * (1 + 0.0012702)).toFixed(8),
+				(price * (1 + 0.0032702)).toFixed(6),
 				60 * 3
 			).then(console.log);
 		}
@@ -96,8 +96,8 @@ export default {
 			const sell_btc = await newOrder(
 				`${ticker}-${base}`,
 				"BUY",
-				(await convertBaseTo(base_balance, ticker, base)).toFixed(1),
-				(price * (1 - 0.0012702)).toFixed(8),
+				(await convertBaseTo(base_balance, ticker, base)).toFixed(5),
+				(price * (1 - 0.0032702)).toFixed(6),
 				60 * 3
 			).then(console.log);
 		}
