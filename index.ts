@@ -72,7 +72,7 @@ export default {
 			},
 		};
 		const balances = await getBalances();
-		const ticker = "ETH";
+		const ticker = "MATIC";
 		const base = "BTC";
 		const base_balance = balances.filter((x) => x.currency === base)[0].value;
 		const ticker_balance = balances.filter((x) => x.currency === ticker)[0]
@@ -96,8 +96,8 @@ export default {
 			const sell_btc = await newOrder(
 				`${ticker}-${base}`,
 				"BUY",
-				(await convertBaseTo(base_balance, ticker, base)).toFixed(5),
-				(price * (1 - 0.0012702)).toFixed(5),
+				(await convertBaseTo(base_balance, ticker, base)).toFixed(1),
+				(price * (1 - 0.0012702)).toFixed(8),
 				60 * 3
 			).then(console.log);
 		}
@@ -170,6 +170,23 @@ const getBalances = async () => {
 	return fetch(coinbase.api.url + path, { method, headers })
 		.then((r) => r.json())
 		.then((j) => j.accounts.map((account) => account.available_balance));
+};
+
+const cancelAllOrders = async () => {
+	const method = "DELETE";
+	const endpoint = "orders";
+	const path = coinbase.api.path + endpoint;
+	const timestamp = getTimestamp();
+	console.log(await getSignature(timestamp, path, method));
+	const headers = {
+		"Content-Type": "application/json",
+		"CB-ACCESS-KEY": coinbase.api.key,
+		"CB-ACCESS-SIGN": await getSignature(timestamp, path, method),
+		"CB-ACCESS-TIMESTAMP": timestamp,
+	};
+	return fetch(coinbase.api.url + path, { method, headers }).then((r) =>
+		r.json()
+	);
 };
 
 const convertBaseTo = async (x, ticker, base) => {
