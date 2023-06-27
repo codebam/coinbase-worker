@@ -87,18 +87,18 @@ export default {
 			const buy_btc = await newOrder(
 				`${ticker}-${base}`,
 				"SELL",
-				parseFloat(ticker_balance).toFixed(5),
+				(parseFloat(ticker_balance) * 0.7).toFixed(5),
 				(price * (1 + 0.0032702)).toFixed(6),
-				60 * 3
+				60 * 2
 			).then(console.log);
 		}
 		if (up) {
 			const sell_btc = await newOrder(
 				`${ticker}-${base}`,
 				"BUY",
-				(await convertBaseTo(base_balance, ticker, base)).toFixed(5),
+				(await convertBaseTo(base_balance * 0.7, ticker, base)).toFixed(5),
 				(price * (1 - 0.0032702)).toFixed(6),
-				60 * 3
+				60 * 2
 			).then(console.log);
 		}
 	},
