@@ -146,7 +146,6 @@ const getSignature = async (
 const getPrice = async (ticker: string) => {
 	const path = `products/${ticker}/ticker`;
 	const headers = { "User-Agent": "Cloudflare" };
-	console.log(coinbase.exchange.url + path);
 	const price = await fetch(coinbase.exchange.url + path, { headers })
 		.then((r) => r.json())
 		.then((j) => parseFloat(j.price));
@@ -156,7 +155,6 @@ const getPrice = async (ticker: string) => {
 const getCandles = async (ticker: string) => {
 	const path = `products/${ticker}/candles`;
 	const headers = { "User-Agent": "Cloudflare" };
-	console.log(coinbase.exchange.url + path);
 	const candles = await fetch(coinbase.exchange.url + path, { headers }).then(
 		(r) => r.json()
 	);
@@ -168,7 +166,6 @@ const getBalances = async () => {
 	const endpoint = "accounts";
 	const path = coinbase.api.path + endpoint;
 	const timestamp = getTimestamp();
-	console.log(await getSignature(timestamp, path, method));
 	const headers = {
 		"Content-Type": "application/json",
 		"CB-ACCESS-KEY": coinbase.api.key,
@@ -185,7 +182,6 @@ const cancelAllOrders = async () => {
 	const endpoint = "orders";
 	const path = coinbase.api.path + endpoint;
 	const timestamp = getTimestamp();
-	console.log(await getSignature(timestamp, path, method));
 	const headers = {
 		"Content-Type": "application/json",
 		"CB-ACCESS-KEY": coinbase.api.key,
@@ -226,8 +222,6 @@ const newOrder = async (
 			},
 		},
 	};
-
-	console.log(body_params);
 	const body = JSON.stringify(body_params);
 	const headers = {
 		"Content-Type": "application/json",
