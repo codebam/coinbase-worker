@@ -83,24 +83,30 @@ export default {
 		const ema20 = calculateEMA(close, 20);
 		const ema100 = calculateEMA(close, 100);
 		const up = ema100 > ema20;
+		let orders: any = [];
 		if (ticker_balance > 0.00001) {
-			const buy_btc = await newOrder(
-				`${ticker}-${base}`,
-				"SELL",
-				(parseFloat(ticker_balance) * 0.7).toFixed(5),
-				(price * (1 + 0.0032702)).toFixed(6),
-				60 * 2
-			).then(console.log);
+			orders.push(
+				newOrder(
+					`${ticker}-${base}`,
+					"SELL",
+					(parseFloat(ticker_balance) * 0.7).toFixed(5),
+					(price * (1 + 0.0032702)).toFixed(6),
+					60 * 2
+				).then(console.log)
+			);
 		}
 		if (!up) {
-			const sell_btc = await newOrder(
-				`${ticker}-${base}`,
-				"BUY",
-				(await convertBaseTo(base_balance * 0.7, ticker, base)).toFixed(5),
-				(price * (1 - 0.0032702)).toFixed(6),
-				60 * 2
-			).then(console.log);
+			orders.push(
+				newOrder(
+					`${ticker}-${base}`,
+					"BUY",
+					(await convertBaseTo(base_balance * 0.7, ticker, base)).toFixed(5),
+					(price * (1 - 0.0032702)).toFixed(6),
+					60 * 2
+				).then(console.log)
+			);
 		}
+		return Promise.all(orders);
 	},
 };
 
