@@ -8,6 +8,9 @@ let coinbase = {
 	exchange: {
 		// to get tickers
 		url: "https://api.exchange.coinbase.com/",
+		key: "",
+		secret: "",
+		passphrase: "",
 	},
 	api: {
 		// for using the api
@@ -33,6 +36,9 @@ export default {
 			exchange: {
 				// to get tickers
 				url: "https://api.exchange.coinbase.com/",
+				key: env.COINBASE_PRO_API,
+				secret: env.COINBASE_PRO_SECRET,
+				passphrase: env.COINBASE_PRO_PASSPHRASE,
 			},
 			api: {
 				// for using the api
@@ -54,6 +60,9 @@ export default {
 			exchange: {
 				// to get tickers
 				url: "https://api.exchange.coinbase.com/",
+				key: env.COINBASE_PRO_API,
+				secret: env.COINBASE_PRO_SECRET,
+				passphrase: env.COINBASE_PRO_PASSPHRASE,
 			},
 			api: {
 				// for using the api
@@ -76,9 +85,9 @@ export default {
 		const ema20 = calculateEMA(close, 20);
 		const ema100 = calculateEMA(close, 100);
 		const up = ema100 > ema20;
-		let orders: any = [];
+		let queue: any = [];
 		if (ticker_balance > 0.00001) {
-			orders.push(
+			queue.push(
 				newOrder(
 					`${ticker}-${base}`,
 					"SELL",
@@ -89,7 +98,7 @@ export default {
 			);
 		}
 		if (!up) {
-			orders.push(
+			queue.push(
 				newOrder(
 					`${ticker}-${base}`,
 					"BUY",
@@ -99,7 +108,7 @@ export default {
 				)
 			);
 		}
-		const result = Promise.all(orders);
+		const result = Promise.allSettled(queue);
 		console.log(await result);
 		return result;
 	},
@@ -131,10 +140,10 @@ const getTimestamp = () => `${Math.trunc(new Date().getTime() / 1000)}`;
 const getSignature = async (
 	timestamp: string,
 	path: string,
+	secret: string,
 	method = "",
 	body = ""
-) =>
-	`${await hmacSha256(timestamp + method + path + body, coinbase.api.secret)}`;
+) => hmacSha256(timestamp + method + path + body, secret).toString();
 
 const getPrice = async (ticker: string) => {
 	const path = `products/${ticker}/ticker`;
@@ -154,6 +163,72 @@ const getCandles = async (ticker: string) => {
 	return candles;
 };
 
+const getAllOrders = async (limit: number, status: [string]) => {
+	const path = `orders`;
+	const method = "GET";
+	const timestamp = getTimestamp();
+	const headers = {
+		"User-Agent": "Cloudflare",
+		"Content-Type": "application/json",
+		"CB-ACCESS-KEY": coinbase.api.key,
+		"CB-ACCESS-SIGN": await getSignature(
+			timestamp,
+			path,
+			coinbase.exchange.secret,
+			method
+		),
+		"CB-ACCESS-TIMESTAMP": timestamp,
+	};
+	const orders = await fetch(coinbase.api.url + path, { headers }).then((r) =>
+		r.json()
+	);
+	return orders;
+};
+
+const getAllFills = async () => {
+	const method = "GET";
+	const path = `fills`;
+	const timestamp = getTimestamp();
+	const headers = {
+		"User-Agent": "Cloudflare",
+		"Content-Type": "application/json",
+		"CB-ACCESS-KEY": coinbase.exchange.key,
+		"CB-ACCESS-PASSPHRASE": coinbase.exchange.passphrase,
+		"CB-ACCESS-SIGN": await getSignature(
+			timestamp,
+			path,
+			coinbase.exchange.secret,
+			method
+		),
+		"CB-ACCESS-TIMESTAMP": timestamp,
+	};
+	return fetch(coinbase.exchange.url + path, { method, headers }).then((r) =>
+		r.json()
+	);
+};
+
+const cancelOrder = async (id: number) => {
+	const method = "DELETE";
+	const path = `orders/${id}`;
+	const timestamp = getTimestamp();
+	const headers = {
+		"User-Agent": "Cloudflare",
+		"Content-Type": "application/json",
+		"CB-ACCESS-KEY": coinbase.exchange.key,
+		"CB-ACCESS-PASSPHRASE": coinbase.exchange.passphrase,
+		"CB-ACCESS-SIGN": await getSignature(
+			timestamp,
+			path,
+			coinbase.exchange.secret,
+			method
+		),
+		"CB-ACCESS-TIMESTAMP": timestamp,
+	};
+	return fetch(coinbase.api.url + path, { method, headers }).then((r) =>
+		r.json()
+	);
+};
+
 const getBalances = async () => {
 	const method = "GET";
 	const endpoint = "accounts";
@@ -162,7 +237,12 @@ const getBalances = async () => {
 	const headers = {
 		"Content-Type": "application/json",
 		"CB-ACCESS-KEY": coinbase.api.key,
-		"CB-ACCESS-SIGN": await getSignature(timestamp, path, method),
+		"CB-ACCESS-SIGN": await getSignature(
+			timestamp,
+			path,
+			coinbase.api.secret,
+			method
+		),
 		"CB-ACCESS-TIMESTAMP": timestamp,
 	};
 	return fetch(coinbase.api.url + path, { method, headers })
@@ -176,9 +256,16 @@ const cancelAllOrders = async () => {
 	const path = coinbase.api.path + endpoint;
 	const timestamp = getTimestamp();
 	const headers = {
+		"User-Agent": "Cloudflare",
 		"Content-Type": "application/json",
-		"CB-ACCESS-KEY": coinbase.api.key,
-		"CB-ACCESS-SIGN": await getSignature(timestamp, path, method),
+		"CB-ACCESS-KEY": coinbase.exchange.key,
+		"CB-ACCESS-PASSPHRASE": coinbase.exchange.passphrase,
+		"CB-ACCESS-SIGN": await getSignature(
+			timestamp,
+			path,
+			coinbase.exchange.secret,
+			method
+		),
 		"CB-ACCESS-TIMESTAMP": timestamp,
 	};
 	return fetch(coinbase.api.url + path, { method, headers }).then((r) =>
@@ -219,7 +306,13 @@ const newOrder = async (
 	const headers = {
 		"Content-Type": "application/json",
 		"CB-ACCESS-KEY": coinbase.api.key,
-		"CB-ACCESS-SIGN": await getSignature(timestamp, path, method, body),
+		"CB-ACCESS-SIGN": await getSignature(
+			timestamp,
+			path,
+			coinbase.api.secret,
+			method,
+			body
+		),
 		"CB-ACCESS-TIMESTAMP": timestamp,
 	};
 	return fetch(coinbase.api.url + path, { method, headers, body }).then((r) =>
