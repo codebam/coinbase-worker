@@ -160,6 +160,21 @@ const getCandles = async (ticker: string) => {
 	return candles;
 };
 
+const listFills = async () => {
+	const method = "GET";
+	const path = coinbase.api.path + `orders/historical/fills`;
+	const url = new URL(coinbase.api.url + path);
+	const timestamp = getTimestamp();
+	const headers = {
+		"Content-Type": "application/json",
+		"CB-ACCESS-KEY": coinbase.api.key,
+		"CB-ACCESS-SIGN": await getSignature(timestamp, path, method),
+		"CB-ACCESS-TIMESTAMP": timestamp,
+	};
+	const orders = await fetch(url, { headers }).then((r) => r.json());
+	return orders;
+};
+
 const listOpenOrders = async () => {
 	const method = "GET";
 	const path = coinbase.api.path + `orders/historical/batch`;
