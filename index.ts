@@ -71,7 +71,7 @@ export default {
 					`${ticker}-${base}`,
 					"SELL",
 					(parseFloat(ticker_balance) * 0.3).toFixed(5),
-					(price * (1 + 0.0032702)).toFixed(6),
+					(price * (1 + 0.0007702)).toFixed(6),
 					60 * 2
 				)
 			);
@@ -82,7 +82,7 @@ export default {
 					`${ticker}-${base}`,
 					"BUY",
 					(await convertBaseTo(base_balance * 0.3, ticker, base)).toFixed(5),
-					(price * (1 - 0.0032702)).toFixed(6),
+					(price * (1 - 0.0007702)).toFixed(6),
 					60 * 2
 				)
 			);
@@ -193,19 +193,15 @@ const listOpenOrders = async () => {
 
 const cancelOrders = async (order_ids) => {
 	const method = "POST";
-	const path = coinbase.api.path + `orders/historical/batch`;
+	const path = coinbase.api.path + `orders/batch_cancel`;
 	const url = new URL(coinbase.api.url + path);
-	const body = new URLSearchParams({ order_ids: order_ids.toString() });
+	const body = JSON.stringify({ order_ids: order_ids });
+	console.log(body);
 	const timestamp = getTimestamp();
 	const headers = {
 		"Content-Type": "application/json",
 		"CB-ACCESS-KEY": coinbase.api.key,
-		"CB-ACCESS-SIGN": await getSignature(
-			timestamp,
-			path,
-			method,
-			body.toString()
-		),
+		"CB-ACCESS-SIGN": await getSignature(timestamp, path, method, body),
 		"CB-ACCESS-TIMESTAMP": timestamp,
 	};
 	const result = await fetch(url, { method, headers, body }).then((r) =>
