@@ -5,16 +5,12 @@ Date.prototype.addMinutes = function (m: number) {
 };
 
 let coinbase = {
-	exchange: {
-		// to get tickers
-		url: "https://api.exchange.coinbase.com/",
-	},
 	api: {
 		// for using the api
 		url: "https://api.coinbase.com",
 		path: "/api/v3/brokerage/",
-		key: "",
-		secret: "",
+		key: "FvQDCkkMtOHKw262",
+		secret: "wVimma4qk3FsGLReZjiIgcbOU2KliOQe",
 	},
 };
 
@@ -30,10 +26,6 @@ function calculateEMA(closingPrices: [number], period: number) {
 export default {
 	fetch: async (request: any, env: any, ctx: any) => {
 		coinbase = {
-			exchange: {
-				// to get tickers
-				url: "https://api.exchange.coinbase.com/",
-			},
 			api: {
 				// for using the api
 				url: "https://api.coinbase.com",
@@ -51,10 +43,6 @@ export default {
 	},
 	scheduled: async (event: any, env: any, ctx: any) => {
 		coinbase = {
-			exchange: {
-				// to get tickers
-				url: "https://api.exchange.coinbase.com/",
-			},
 			api: {
 				// for using the api
 				url: "https://api.coinbase.com",
@@ -72,7 +60,7 @@ export default {
 			.value;
 		const price = await getPrice(`${ticker}-${base}`);
 		const candles = await getCandles(`${ticker}-${base}`);
-		const close = candles.map((candle: any) => candle[4]);
+		const close = candles.map((candle: any) => candle.close);
 		const ema20 = calculateEMA(close, 20);
 		const ema100 = calculateEMA(close, 100);
 		const up = ema100 > ema20;
@@ -137,20 +125,39 @@ const getSignature = async (
 	`${await hmacSha256(timestamp + method + path + body, coinbase.api.secret)}`;
 
 const getPrice = async (ticker: string) => {
-	const path = `products/${ticker}/ticker`;
-	const headers = { "User-Agent": "Cloudflare" };
-	const price = await fetch(coinbase.exchange.url + path, { headers })
+	const method = "GET";
+	const path = coinbase.api.path + `products/${ticker}`;
+	const timestamp = getTimestamp();
+	const headers = {
+		"Content-Type": "application/json",
+		"CB-ACCESS-KEY": coinbase.api.key,
+		"CB-ACCESS-SIGN": await getSignature(timestamp, path, method),
+		"CB-ACCESS-TIMESTAMP": timestamp,
+	};
+	const price = await fetch(coinbase.api.url + path, { headers })
 		.then((r) => r.json())
 		.then((j) => parseFloat(j.price));
 	return price;
 };
 
 const getCandles = async (ticker: string) => {
-	const path = `products/${ticker}/candles`;
-	const headers = { "User-Agent": "Cloudflare" };
-	const candles = await fetch(coinbase.exchange.url + path, { headers }).then(
-		(r) => r.json()
-	);
+	const method = "GET";
+	const start = Math.floor((Date.now() - 36000000) / 1000);
+	const end = Math.floor(Date.now() / 1000);
+	console.log(start, end);
+	const path = coinbase.api.path + `products/${ticker}/candles`;
+	const url = new URL(coinbase.api.url + path);
+	url.searchParams.set("start", start.toString());
+	url.searchParams.set("end", end.toString());
+	url.searchParams.set("granularity", "FIVE_MINUTE");
+	const timestamp = getTimestamp();
+	const headers = {
+		"Content-Type": "application/json",
+		"CB-ACCESS-KEY": coinbase.api.key,
+		"CB-ACCESS-SIGN": await getSignature(timestamp, path, method),
+		"CB-ACCESS-TIMESTAMP": timestamp,
+	};
+	const candles = await fetch(url, { headers }).then((r) => r.json());
 	return candles;
 };
 
@@ -226,3 +233,5 @@ const newOrder = async (
 		r.json()
 	);
 };
+
+getCandles("LTC-BTC").then(console.log);
