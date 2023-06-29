@@ -87,9 +87,9 @@ export default {
 				)
 			);
 		}
-		const result = Promise.allSettled(orders).then((r) => {
+		const result = Promise.allSettled(orders).then(async (r) => {
 			if (r.filter((p) => p.status === "rejected").length > 1)
-				listOpenOrders()
+				await listOpenOrders()
 					.then((orders) => orders.orders.map((order: any) => order.order_id))
 					.then(cancelOrders)
 					.then(console.log);
