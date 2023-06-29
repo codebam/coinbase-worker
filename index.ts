@@ -297,8 +297,3 @@ const newOrder = async (
 		resolve(result);
 	});
 };
-
-listOpenOrders()
-	.then((orders) => orders.orders.map((order) => order.order_id))
-	.then(cancelOrders)
-	.then(console.log);
