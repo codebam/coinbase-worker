@@ -60,7 +60,7 @@ export default {
 			.value;
 		const price = await getPrice(`${ticker}-${base}`);
 		const candles = await getCandles(`${ticker}-${base}`);
-		const close = candles.map((candle: any) => candle.close);
+		const close = candles.candles.map((candle: any) => candle.close);
 		const ema20 = calculateEMA(close, 20);
 		const ema100 = calculateEMA(close, 100);
 		const up = ema100 > ema20;
@@ -233,5 +233,3 @@ const newOrder = async (
 		r.json()
 	);
 };
-
-getCandles("LTC-BTC").then(console.log);
