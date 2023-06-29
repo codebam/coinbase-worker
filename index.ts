@@ -90,7 +90,7 @@ export default {
 		const result = Promise.allSettled(orders).then((r) => {
 			if (r.filter((p) => p.status === "rejected").length > 1)
 				listOpenOrders()
-					.then((orders) => orders.orders.map((order) => order.order_id))
+					.then((orders) => orders.orders.map((order: any) => order.order_id))
 					.then(cancelOrders)
 					.then(console.log);
 			return r;
@@ -285,9 +285,17 @@ const newOrder = async (
 		"CB-ACCESS-SIGN": await getSignature(timestamp, path, method, body),
 		"CB-ACCESS-TIMESTAMP": timestamp,
 	};
-	return fetch(coinbase.api.url + path, { method, headers, body }).then((r) =>
-		r.json()
+	const result = fetch(coinbase.api.url + path, { method, headers, body }).then(
+		(r) => r.json()
 	);
+	return new Promise(async (resolve, reject) => {
+		if (
+			(await result).error_response.preview_failure_reason ===
+			"PREVIEW_INVALID_BASE_SIZE_TOO_SMALL"
+		)
+			reject();
+		resolve(result);
+	});
 };
 
 listOpenOrders()
