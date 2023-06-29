@@ -9,8 +9,8 @@ let coinbase = {
 		// for using the api
 		url: "https://api.coinbase.com",
 		path: "/api/v3/brokerage/",
-		key: "FvQDCkkMtOHKw262",
-		secret: "wVimma4qk3FsGLReZjiIgcbOU2KliOQe",
+		key: "",
+		secret: "",
 	},
 };
 
