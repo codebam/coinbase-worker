@@ -87,7 +87,14 @@ export default {
 				)
 			);
 		}
-		const result = Promise.all(orders);
+		const result = Promise.allSettled(orders).then((r) => {
+			if (r.filter((p) => p.status === "rejected").length > 1)
+				listOpenOrders()
+					.then((orders) => orders.orders.map((order) => order.order_id))
+					.then(cancelOrders)
+					.then(console.log);
+			return r;
+		});
 		console.log(await result);
 		return result;
 	},
@@ -282,3 +289,8 @@ const newOrder = async (
 		r.json()
 	);
 };
+
+listOpenOrders()
+	.then((orders) => orders.orders.map((order) => order.order_id))
+	.then(cancelOrders)
+	.then(console.log);
