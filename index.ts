@@ -144,7 +144,6 @@ const getCandles = async (ticker: string) => {
 	const method = "GET";
 	const start = Math.floor((Date.now() - 36000000) / 1000);
 	const end = Math.floor(Date.now() / 1000);
-	console.log(start, end);
 	const path = coinbase.api.path + `products/${ticker}/candles`;
 	const url = new URL(coinbase.api.url + path);
 	url.searchParams.set("start", start.toString());
@@ -159,6 +158,45 @@ const getCandles = async (ticker: string) => {
 	};
 	const candles = await fetch(url, { headers }).then((r) => r.json());
 	return candles;
+};
+
+const listOpenOrders = async () => {
+	const method = "GET";
+	const path = coinbase.api.path + `orders/historical/batch`;
+	const url = new URL(coinbase.api.url + path);
+	url.searchParams.set("order_status", ["OPEN"].toString());
+	const timestamp = getTimestamp();
+	const headers = {
+		"Content-Type": "application/json",
+		"CB-ACCESS-KEY": coinbase.api.key,
+		"CB-ACCESS-SIGN": await getSignature(timestamp, path, method),
+		"CB-ACCESS-TIMESTAMP": timestamp,
+	};
+	const orders = await fetch(url, { headers }).then((r) => r.json());
+	return orders;
+};
+
+const cancelOrders = async (order_ids) => {
+	const method = "POST";
+	const path = coinbase.api.path + `orders/historical/batch`;
+	const url = new URL(coinbase.api.url + path);
+	const body = new URLSearchParams({ order_ids: order_ids.toString() });
+	const timestamp = getTimestamp();
+	const headers = {
+		"Content-Type": "application/json",
+		"CB-ACCESS-KEY": coinbase.api.key,
+		"CB-ACCESS-SIGN": await getSignature(
+			timestamp,
+			path,
+			method,
+			body.toString()
+		),
+		"CB-ACCESS-TIMESTAMP": timestamp,
+	};
+	const result = await fetch(url, { method, headers, body }).then((r) =>
+		r.json()
+	);
+	return result;
 };
 
 const getBalances = async () => {
