@@ -82,7 +82,7 @@ export default {
 				newOrder(
 					`${ticker}-${base}`,
 					"SELL",
-					(parseFloat(ticker_balance) * 0.7).toFixed(5),
+					(parseFloat(ticker_balance) * 0.3).toFixed(5),
 					(price * (1 + 0.0032702)).toFixed(6),
 					60 * 2
 				)
@@ -93,7 +93,7 @@ export default {
 				newOrder(
 					`${ticker}-${base}`,
 					"BUY",
-					(await convertBaseTo(base_balance * 0.7, ticker, base)).toFixed(5),
+					(await convertBaseTo(base_balance * 0.3, ticker, base)).toFixed(5),
 					(price * (1 - 0.0032702)).toFixed(6),
 					60 * 2
 				)
